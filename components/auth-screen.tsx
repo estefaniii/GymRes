@@ -97,15 +97,27 @@ export function AuthScreen() {
       return
     }
     const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
-    })
-    if (error) {
+    try {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotEmail,
+          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al enviar el correo")
+      }
+
+      setView("forgot-sent")
+    } catch (error: any) {
       console.error("Reset Password Error:", error.message)
       toast.error("No se pudo enviar el enlace: " + error.message)
-      return
     }
-    setView("forgot-sent")
   }
 
   const resetToLogin = () => {
