@@ -19,6 +19,7 @@ interface AppContextType {
   register: (data: { nombre: string; apellido: string; email: string; password: string; genero: string; rangoEdad: string; tipo: string; apartamento?: string; aceptaMarketing: boolean }) => Promise<boolean>
   loading: boolean
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -188,6 +189,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClientView("dashboard")
   }
 
+  const refreshUser = async () => {
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle()
+
+      if (profile) {
+        setUser({
+          id: profile.id,
+          nombre: profile.nombre || 'Usuario',
+          apellido: profile.apellido || '',
+          email: profile.email,
+          genero: profile.genero,
+          rangoEdad: profile.rango_edad,
+          rol: profile.rol,
+          aceptaMarketing: profile.acepta_marketing,
+          createdAt: profile.created_at,
+          apartamento: profile.apartamento
+        } as User)
+      }
+    }
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -199,6 +226,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        refreshUser,
         loading,
       }}
     >

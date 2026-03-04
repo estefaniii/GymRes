@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner"
 
 export function UserProfile() {
-  const { user, logout, setClientView } = useApp()
+  const { user, logout, setClientView, refreshUser } = useApp()
   const [nombre, setNombre] = useState(user?.nombre || "")
   const [apellido, setApellido] = useState(user?.apellido || "")
   const [apartamento, setApartamento] = useState(user?.apartamento || "")
@@ -66,6 +66,7 @@ export function UserProfile() {
     if (error) {
       toast.error("No se pudo actualizar el perfil")
     } else {
+      await refreshUser()
       toast.success("Perfil actualizado correctamente")
     }
   }
