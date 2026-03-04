@@ -5,12 +5,15 @@ export function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !key) {
+    // If we're on the client, show a warning
     if (typeof window !== 'undefined') {
-      console.error('Supabase credentials missing!')
+      console.warn('Supabase credentials missing! Using placeholder for build phase.')
     }
-    // Return a dummy client or handle it safely. 
-    // During build this allows the process to continue.
-    return createBrowserClient(url || '', key || '')
+    // Return a client with placeholder values to bypass constructor validation during build
+    return createBrowserClient(
+      url || 'https://placeholder.supabase.co',
+      key || 'placeholder-key'
+    )
   }
 
   return createBrowserClient(url, key)

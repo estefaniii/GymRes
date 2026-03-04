@@ -8,13 +8,17 @@ export async function createClient() {
 
   if (!url || !key) {
     // During build, environment variables might be missing.
-    // Return a basic client to avoid crashing the build process.
-    return createServerClient(url || '', key || '', {
-      cookies: {
-        getAll() { return [] },
-        setAll() { }
+    // Return a basic client with placeholder values to avoid crashing the build process.
+    return createServerClient(
+      url || 'https://placeholder.supabase.co',
+      key || 'placeholder-key',
+      {
+        cookies: {
+          getAll() { return [] },
+          setAll() { }
+        }
       }
-    })
+    )
   }
 
   return createServerClient(
