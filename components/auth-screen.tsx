@@ -98,7 +98,7 @@ export function AuthScreen() {
     }
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: 'http://localhost:3000/reset-password',
+      redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
     })
     if (error) {
       console.error("Reset Password Error:", error.message)
