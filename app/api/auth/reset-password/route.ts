@@ -41,12 +41,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: linkError.message }, { status: 500 })
     }
 
+    // Use the verified domain from Resend or the default onboarding one
+    // NOTE: You should verify your domain in Resend to use a custom address
     const recoveryLink = data.properties.action_link
     const resend = new Resend(resendApiKey)
+    const fromAddress = "onboarding@resend.dev" 
 
     // Send the email using Resend
     const { error: emailError } = await resend.emails.send({
-      from: "GymRes <no-reply@gymres.app>",
+      from: `GymRes <${fromAddress}>`,
       to: [email],
       subject: "Recuperación de contraseña - GymRes",
       html: `
@@ -72,8 +75,9 @@ export async function POST(request: Request) {
     })
 
     if (emailError) {
+      console.error("Full Resend Error Object:", JSON.stringify(emailError, null, 2))
       console.error("Error sending recovery email via Resend:", emailError.message)
-      return NextResponse.json({ error: "Error sending recovery email" }, { status: 500 })
+      return NextResponse.json({ error: `Error de Resend: ${emailError.message}` }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true })
