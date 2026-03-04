@@ -73,19 +73,20 @@ export function checkBookingAvailability(slot, role) {
 ## 🌟 Vista del Panel de Administración
 El administrador tiene control total sobre el ecosistema del gimnasio:
 
-Resumen: Estadísticas rápidas de uso diario.
-Usuarios: Verificación y gestión de roles (Inquilino, Propietario, Huésped).
-Anuncios: Publicación de avisos con soporte para carga de imágenes WebP.
+- Resumen: Estadísticas rápidas de uso diario.
+- Usuarios: Verificación y gestión de roles (Inquilino, Propietario, Huésped).
+- Anuncios: Publicación de avisos con soporte para carga de imágenes WebP.
 
 ## 🤝 Contribuciones
-Haz un Fork del proyecto
-Crea tu rama de función (git checkout -b feature/nueva-mejora)
-Haz commit de tus cambios (git commit -m 'Añadir nueva mejora')
-Push a la rama (git push origin feature/nueva-mejora)
-Abre un Pull Request
+-  Haz un Fork del proyecto
+- Crea tu rama de función (git checkout -b feature/nueva-mejora)
+- Haz commit de tus cambios (git commit -m 'Añadir nueva mejora')
+- Push a la rama (git push origin feature/nueva-mejora)
+- Abre un Pull Request
 
 ## 💖 Apoya el Proyecto
 Si esta aplicación te ha ayudado a organizar tu comunidad, considera apoyar el desarrollo continuo:
+
 [![Support via PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal)](https://paypal.me/estefanniii?country.x=PA&locale.x=es_XC)
 
 ⭐ ¡No olvides darle una estrella al repositorio si te gusta GymRes!
