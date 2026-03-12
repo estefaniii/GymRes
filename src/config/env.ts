@@ -1,5 +1,23 @@
 import { config } from "dotenv";
-config();
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { existsSync } from "fs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Try multiple possible .env locations (worktree support)
+const envCandidates = [
+  resolve(__dirname, "../../.env"),
+  resolve(process.cwd(), ".env"),
+  resolve(process.cwd(), "../../.env"),
+];
+
+for (const candidate of envCandidates) {
+  if (existsSync(candidate)) {
+    config({ path: candidate, override: true });
+    break;
+  }
+}
 
 export interface EnvConfig {
   ANTHROPIC_API_KEY: string;
@@ -7,7 +25,8 @@ export interface EnvConfig {
   GEMINI_API_KEY: string;
   OPENROUTER_API_KEY: string;
   DB_PATH: string;
-  GOOGLE_APPLICATION_CREDENTIALS: string;
+  PORT: string;
+  OUTPUT_DIR: string;
 }
 
 function requireEnv(key: string): string {
@@ -29,5 +48,6 @@ export const env: EnvConfig = {
   GEMINI_API_KEY: optionalEnv("GEMINI_API_KEY", ""),
   OPENROUTER_API_KEY: optionalEnv("OPENROUTER_API_KEY", ""),
   DB_PATH: optionalEnv("DB_PATH", "./memory.db"),
-  GOOGLE_APPLICATION_CREDENTIALS: optionalEnv("GOOGLE_APPLICATION_CREDENTIALS", "./service-account.json"),
+  PORT: optionalEnv("PORT", "3000"),
+  OUTPUT_DIR: optionalEnv("OUTPUT_DIR", "./output"),
 };

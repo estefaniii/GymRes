@@ -1,41 +1,81 @@
 import type { BrandIdentity, Competitor, KeywordGroup } from "../types/index.js";
 
-export const STRATEGY_SYSTEM_PROMPT = `You are StrategyGravity, an elite AI marketing strategist. You create comprehensive, actionable marketing strategies comparable in quality and depth to those created by top agencies.
+export const STRATEGY_SYSTEM_PROMPT = `Eres StrategyGravity, un estratega de marketing digital de élite con 20 años de experiencia en agencias de primer nivel como McCann, Ogilvy y Wunderman Thompson.
 
-Your strategies are data-driven, creative, and tailored to each business.
-Always respond in Spanish (Latin American).
-Always return valid JSON when requested.`;
+REGLAS CRÍTICAS:
+1. SIEMPRE responde en español (Latinoamérica)
+2. Cada sección debe ser DETALLADA y EXTENSA - mínimo 3-4 párrafos por sección
+3. Usa datos concretos, porcentajes y referencias reales cuando sea posible
+4. No uses generalizaciones vagas - sé ESPECÍFICO para la industria y el negocio
+5. Cada análisis de competidor debe ser extenso con insights únicos
+6. SIEMPRE retorna JSON válido cuando se solicite - sin markdown, sin backticks
+7. Tu análisis debe ser TAN PROFESIONAL que podría presentarse a un C-suite sin modificaciones
+8. Piensa como un consultor que cobra $50,000 USD por estrategia`;
 
-// ─── Point 1: Description ───
+// ─── Point 1: Descripción ───
 export function promptDescription(brand: BrandIdentity): string {
-  return `Create the Description section for "${brand.companyName}" in the ${brand.industry} industry.
-Description: ${brand.description}
+  return `Crea la sección "Descripción" de la estrategia de marketing para "${brand.companyName}" en la industria de ${brand.industry}.
 
-Return JSON:
+Información de la empresa: ${brand.description}
+Sitio web: ${brand.website || "No disponible"}
+Ubicación: ${brand.location || "No especificada"}
+
+La descripción debe incluir:
+- Un RESUMEN EJECUTIVO CONCISO de 2-3 párrafos (máximo 150 palabras) que cubra: qué hace la empresa, su propuesta de valor y su público principal. Sé directo, sin relleno.
+- Un OBJETIVO GENERAL de la empresa en 1-2 oraciones: describe el propósito central de la empresa y lo que busca lograr para sus clientes (NO un objetivo SMART numérico, sino aspiracional, como: "Conectar a inversores con oportunidades premium, protegiendo su patrimonio y elevando su calidad de vida")
+
+Sé CONCISO y PROFESIONAL. Cada palabra debe aportar valor.
+
+Retorna SOLO JSON válido:
 {
-  "summary": "A 3-4 sentence professional summary of the company, its market position, and value proposition",
-  "objective": "A clear, measurable strategic objective for the marketing strategy"
+  "summary": "resumen ejecutivo conciso de máximo 150 palabras...",
+  "objective": "objetivo general aspiracional en 1-2 oraciones..."
 }`;
 }
 
 // ─── Point 2: Competitor Analysis ───
 export function promptCompetitorAnalysis(brand: BrandIdentity, competitors: Competitor[]): string {
-  return `Based on this competitor data for "${brand.companyName}", create a detailed analysis for each competitor.
+  const hasData = competitors.length > 0;
+  const dataSection = hasData
+    ? `Datos de competidores encontrados vía web:\n${JSON.stringify(competitors, null, 2)}\n\nPara CADA competidor, expande y refina el análisis.`
+    : `No se encontraron competidores vía búsqueda web. IDENTIFICA 5 competidores REALES de "${brand.companyName}" en la industria de ${brand.industry}${brand.location ? ` en ${brand.location}` : ""}. Usa tu conocimiento para nombrar empresas REALES con sus sitios web verdaderos.`;
 
-Raw competitor data:
-${JSON.stringify(competitors, null, 2)}
+  return `${dataSection}
 
-For each competitor, expand and refine the analysis. Return JSON:
+Empresa analizada: "${brand.companyName}" - ${brand.industry}
+${brand.website ? `Sitio web: ${brand.website}` : ""}
+${brand.location ? `Ubicación: ${brand.location}` : ""}
+
+Cada competidor debe tener:
+- name: nombre real de la empresa
+- website: URL real del sitio web
+- detailedAnalysis: Un párrafo inicial describiendo qué hace la empresa (su especialidad/nicho), seguido de sus fortalezas y oportunidades para ${brand.companyName}. AL MENOS 200 palabras.
+- services: lista de servicios principales (breve, como subtítulo)
+- strengths: MÍNIMO 3 fortalezas con explicación detallada (2+ oraciones cada una). Escríbelas de forma narrativa y específica, con datos concretos cuando sea posible.
+- weaknesses: MÍNIMO 3 debilidades con explicación detallada
+- opportunitiesForUs: MÍNIMO 2 oportunidades ESPECÍFICAS y ACCIONABLES que expliquen cómo ${brand.companyName} puede superar a este competidor. Sé concreto: menciona qué modelo, servicio o enfoque puede adoptar ${brand.companyName} para captar a esos clientes.
+
+IMPORTANTE: Deben ser empresas REALES, no inventadas. Incluye sus sitios web REALES.
+${brand.location && !/mercado objetivo|no determinable/i.test(brand.location) ? `FACTOR GEOGRÁFICO CRÍTICO: Prioriza competidores que operen en ${brand.location} o en el mismo país/región. Deben competir en el MISMO SECTOR (${brand.industry}). Analiza cómo cada competidor se posiciona geográficamente y si tiene presencia local o regional.` : ""}
+
+CRÍTICO - COMPETIDORES DIRECTOS:
+- Cada competidor DEBE competir por el MISMO tipo de cliente que ${brand.companyName}
+- Si ${brand.companyName} es una empresa de relocation para extranjeros, los competidores deben ser OTRAS empresas de relocation para extranjeros, NO inmobiliarias genéricas
+- Las debilidades deben ser REALES y ESPECÍFICAS: sitio web lento, sin blog, diseño anticuado, falta de testimonios, precios opacos, sin presencia en redes, tecnología obsoleta, mala UX móvil, etc.
+- Las oportunidades deben explicar EXACTAMENTE qué puede hacer ${brand.companyName} para captar los clientes de ese competidor
+
+Retorna SOLO JSON válido:
 {
   "competitors": [
     {
-      "name": "competitor name",
+      "name": "nombre",
       "website": "url",
-      "services": ["service1", "service2"],
-      "strengths": ["detailed strength 1", "detailed strength 2", "detailed strength 3"],
-      "weaknesses": ["detailed weakness 1", "detailed weakness 2"],
-      "opportunitiesForUs": ["specific opportunity for ${brand.companyName} 1", "specific opportunity 2"],
-      "seoAnalysis": { "topKeywords": ["kw1", "kw2"], "estimatedTraffic": "level" }
+      "detailedAnalysis": "análisis extenso de 250+ palabras...",
+      "services": ["servicio1", "servicio2"],
+      "strengths": ["fortaleza detallada con explicación de 2+ oraciones"],
+      "weaknesses": ["debilidad detallada con explicación de 2+ oraciones"],
+      "opportunitiesForUs": ["oportunidad específica y accionable"],
+      "seoAnalysis": { "topKeywords": ["kw1", "kw2"], "estimatedTraffic": "nivel" }
     }
   ]
 }`;
@@ -43,33 +83,65 @@ For each competitor, expand and refine the analysis. Return JSON:
 
 // ─── Point 3: Comparative Analysis ───
 export function promptComparativeAnalysis(brand: BrandIdentity, competitors: Competitor[]): string {
-  return `Create a comparative analysis table/summary for "${brand.companyName}" vs its competitors.
+  return `Crea un análisis comparativo COMPLETO de "${brand.companyName}" vs sus competidores.
 
-Company: ${brand.companyName} (${brand.industry})
-Competitors: ${competitors.map(c => c.name).join(", ")}
+Empresa: ${brand.companyName} (${brand.industry})
+Competidores: ${competitors.map((c) => `${c.name} (${c.website})`).join(", ")}
 
-Compare across: services, pricing approach, technology, customer experience, geographic reach, brand positioning, and SEO presence.
+Compara en estas dimensiones:
+1. Servicios ofrecidos
+2. Enfoque de precios/posicionamiento
+3. Tecnología y presencia digital
+4. Experiencia del cliente
+5. Alcance geográfico y presencia local/regional${brand.location ? ` (especialmente en ${brand.location})` : " (analiza en qué mercados opera cada competidor)"}
+6. Posicionamiento de marca
+7. Presencia SEO y marketing digital
+8. Diferenciadores clave
 
-Return JSON:
+Escribe un análisis comparativo EXTENSO de mínimo 500 palabras que incluya una narrativa clara de dónde se posiciona ${brand.companyName} frente a cada competidor, identificando gaps, ventajas y oportunidades estratégicas.
+
+Retorna SOLO JSON válido:
 {
-  "comparativeAnalysis": "A detailed 3-4 paragraph comparative analysis highlighting where ${brand.companyName} stands vs competition, key differentiators, gaps, and strategic positioning opportunities."
+  "comparativeAnalysis": "análisis comparativo extenso de 500+ palabras con comparaciones punto por punto..."
 }`;
 }
 
 // ─── Point 4: Keywords ───
 export function promptKeywords(brand: BrandIdentity, rawKeywords: KeywordGroup[]): string {
-  return `Refine and expand this keyword research for "${brand.companyName}" in ${brand.industry}.
+  const hasData = rawKeywords.length > 0;
+  const dataSection = hasData
+    ? `Datos de keywords encontrados:\n${JSON.stringify(rawKeywords, null, 2)}\n\nRefina, expande y reorganiza estas keywords.`
+    : `No se encontraron keywords vía búsqueda web. GENERA keywords estratégicas basándote en tu conocimiento de la industria.`;
 
-Raw keyword data:
-${JSON.stringify(rawKeywords, null, 2)}
+  return `${dataSection}
 
-Organize into clear categories with search intent. Return JSON:
+Empresa: "${brand.companyName}" - ${brand.industry}
+${brand.location ? `Ubicación: ${brand.location}` : ""}
+${brand.website ? `Sitio web: ${brand.website}` : ""}
+
+Crea 5 CATEGORÍAS de keywords RELEVANTES para la industria de ${brand.industry}:
+1. "Transaccional" - keywords con intención de compra/contratación directa
+2. "Servicios Específicos" - keywords de servicios puntuales que ofrece la empresa
+3. "Geográficas y Locales" - keywords con ubicación o mercado específico
+4. "Competitiva y Conquista" - keywords que compiten contra alternativas
+5. "Informacional y Educativa" - keywords de contenido y aprendizaje
+
+MÍNIMO 8 keywords por categoría. Las keywords deben ser ESPECÍFICAS para ${brand.industry}, no genéricas.
+${brand.location && !/mercado objetivo|no determinable/i.test(brand.location) ? `IMPORTANTE GEOGRÁFICO: Incluye keywords con la ubicación "${brand.location}" y zonas cercanas, especialmente en las categorías "Geográficas y Locales". Piensa en cómo buscan los usuarios de esa zona.` : ""}
+
+IMPORTANTE: Si hay ubicación real, CADA categoría debe incluir al menos 2-3 keywords con la ubicación específica. Piensa como buscaría un cliente REAL: "relocation services panama", "mudanza internacional panamá", etc. Incluye:
+- Keywords a nivel de ciudad
+- Keywords a nivel de país
+- Keywords estilo "cerca de mí" en español ("cerca de mí", "en mi zona")
+- Combinaciones de servicio + ubicación
+
+Retorna SOLO JSON válido:
 {
   "keywordGroups": [
     {
-      "category": "Category Name (e.g., Transactional High-Value, Geographic Urban, etc.)",
+      "category": "Nombre de Categoría",
       "keywords": [
-        { "term": "keyword phrase in English", "intent": "transactional/informational/navigational", "volume": "high/medium/low", "difficulty": "high/medium/low" }
+        { "term": "keyword específica para ${brand.industry}", "intent": "transactional/informational/navigational", "volume": "high/medium/low", "difficulty": "high/medium/low" }
       ]
     }
   ]
@@ -78,176 +150,197 @@ Organize into clear categories with search intent. Return JSON:
 
 // ─── Point 5: Strategic Conclusions ───
 export function promptStrategicConclusions(brand: BrandIdentity, competitors: Competitor[], keywords: KeywordGroup[]): string {
-  return `Based on the competitive and keyword analysis for "${brand.companyName}", provide 4 key strategic conclusions.
+  return `Basado en el análisis competitivo y de keywords de "${brand.companyName}", formula 4 CONCLUSIONES ESTRATÉGICAS clave.
 
-Industry: ${brand.industry}
-Competitors analyzed: ${competitors.map(c => c.name).join(", ")}
-Top keyword categories: ${keywords.map(k => k.category).join(", ")}
+Industria: ${brand.industry}
+Competidores: ${competitors.map((c) => `${c.name}: F[${c.strengths[0]}] D[${c.weaknesses[0]}]`).join("; ")}
+Categorías de keywords: ${keywords.map((k) => k.category).join(", ")}
 
-Each conclusion should identify a critical market insight, backed by the competitive data.
+Cada conclusión debe:
+- Identificar un insight CRÍTICO del mercado
+- Estar respaldada por los datos competitivos analizados
+- Tener un título descriptivo seguido de una explicación de AL MENOS 100 palabras
+- Ser accionable y estratégica
 
-Return JSON:
+Formato: "Título de la Conclusión: explicación detallada de 100+ palabras..."
+
+Retorna SOLO JSON válido:
 {
   "strategicConclusions": [
-    "Conclusion 1: detailed insight about market dynamics...",
-    "Conclusion 2: detailed insight about consumer behavior...",
-    "Conclusion 3: detailed insight about technology/trends...",
-    "Conclusion 4: detailed insight about positioning opportunity..."
+    "Título 1: explicación detallada de 100+ palabras sobre la dinámica del mercado...",
+    "Título 2: explicación detallada sobre comportamiento del consumidor...",
+    "Título 3: explicación detallada sobre tecnología y tendencias...",
+    "Título 4: explicación detallada sobre oportunidad de posicionamiento..."
   ]
 }`;
 }
 
 // ─── Point 6: Differentiation ───
 export function promptDifferentiation(brand: BrandIdentity, conclusions: string[]): string {
-  return `Based on the strategic conclusions for "${brand.companyName}", propose 4 differentiation strategies.
+  return `Basado en las conclusiones estratégicas de "${brand.companyName}", propone 4 ESTRATEGIAS DE DIFERENCIACIÓN únicas.
 
-Strategic conclusions:
+Conclusiones:
 ${conclusions.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
-Each proposal should be unique, actionable, and create real competitive advantage.
+Cada propuesta debe:
+- Tener un nombre creativo y memorable (como "Astra Certified" o "Concierge Consultivo")
+- Explicación de AL MENOS 100 palabras de cómo implementarla
+- Explicar POR QUÉ crea ventaja competitiva real
+- Ser única y no genérica
 
-Return JSON:
+Retorna SOLO JSON válido:
 {
   "differentiationProposals": [
-    "Proposal 1: name and detailed description of differentiation strategy...",
-    "Proposal 2: name and detailed description...",
-    "Proposal 3: name and detailed description...",
-    "Proposal 4: name and detailed description..."
+    "Nombre Propuesta 1: explicación detallada de 100+ palabras sobre implementación y ventaja...",
+    "Nombre Propuesta 2: explicación detallada...",
+    "Nombre Propuesta 3: explicación detallada...",
+    "Nombre Propuesta 4: explicación detallada..."
   ]
 }`;
 }
 
-// ─── Point 7: Services ───
+// ─── Point 7a: Services ───
 export function promptServices(brand: BrandIdentity): string {
-  return `Define the core services offered by "${brand.companyName}" in the ${brand.industry} industry.
-Description: ${brand.description}
+  return `Define los servicios principales de "${brand.companyName}" en ${brand.industry}.
+Descripción: ${brand.description}
 
-List 4-8 core services with clear descriptions.
+Lista 4-8 servicios con descripciones profesionales de 2-3 oraciones cada uno.
 
-Return JSON:
+Retorna SOLO JSON:
 {
   "services": [
-    { "name": "Service Name", "description": "Clear, compelling 2-sentence description of the service and its value to clients" }
+    { "name": "Nombre del Servicio", "description": "Descripción profesional de 2-3 oraciones del servicio y su valor" }
   ]
 }`;
 }
 
-// ─── Point 8: Brand Design ───
+// ─── Point 7b: Brand Design ───
 export function promptBrandDesign(brand: BrandIdentity): string {
-  return `Create the brand design guidelines for "${brand.companyName}".
+  return `Crea los lineamientos de diseño de marca para "${brand.companyName}".
 
-Current brand data:
-- Colors: ${JSON.stringify(brand.colors)}
-- Fonts: ${JSON.stringify(brand.fonts)}
-- Industry: ${brand.industry}
+Datos actuales:
+- Colores: ${JSON.stringify(brand.colors)}
+- Tipografías: ${JSON.stringify(brand.fonts)}
+- Industria: ${brand.industry}
 
-Return JSON:
+Retorna SOLO JSON:
 {
-  "personality": "2-3 sentences describing the brand personality",
-  "values": ["value1", "value2", "value3", "value4"],
-  "guidelines": "Detailed brand usage guidelines - voice, visual consistency, dos and don'ts",
-  "styleReferences": ["Reference 1: style/aesthetic reference", "Reference 2: style/aesthetic reference", "Reference 3"]
+  "personality": "3-4 oraciones describiendo la personalidad de la marca, su voz y cómo se comunica",
+  "values": ["valor1", "valor2", "valor3", "valor4", "valor5"],
+  "guidelines": "Lineamientos detallados de uso de marca - voz, consistencia visual, qué hacer y qué no hacer. Mínimo 150 palabras.",
+  "styleReferences": ["Referencia 1: descripción de estética/estilo", "Referencia 2", "Referencia 3"]
 }`;
 }
 
-// ─── Point 9: Content Strategy ───
+// ─── Point 8: Content Strategy ───
 export function promptContentStrategy(brand: BrandIdentity, services: { name: string }[]): string {
-  return `Create the content strategy for "${brand.companyName}" in ${brand.industry}.
+  return `Crea la estrategia de contenido para "${brand.companyName}" en ${brand.industry}.
 
-Services: ${services.map(s => s.name).join(", ")}
+Servicios: ${services.map((s) => s.name).join(", ")}
 
-Return JSON:
+Retorna SOLO JSON:
 {
   "contentStrategy": {
-    "targetAudience": ["audience segment 1 with description", "audience segment 2", "audience segment 3"],
-    "painPoints": ["pain point 1 with context", "pain point 2", "pain point 3"],
-    "channels": ["LinkedIn", "Instagram", "TikTok", "Blog/SEO", "etc"],
-    "focusAreas": ["geographic or thematic focus area 1", "area 2"],
-    "tone": "Describe the ideal brand tone in 1-2 sentences"
+    "targetAudience": ["segmento 1 con descripción detallada", "segmento 2", "segmento 3"],
+    "painPoints": ["dolor 1 con contexto y explicación", "dolor 2", "dolor 3", "dolor 4"],
+    "channels": ["LinkedIn", "Instagram", "TikTok", "Blog/SEO", "Facebook", "Google"],
+    "focusAreas": ["zona geográfica o temática 1", "zona 2", "zona 3"],
+    "tone": "Descripción del tono ideal en 2-3 oraciones - cómo debe sonar la marca"
   }
 }`;
 }
 
-// ─── Point 10: Content Pillars ───
+// ─── Point 9: Content Pillars ───
 export function promptContentPillars(brand: BrandIdentity, contentStrategy: { targetAudience: string[]; painPoints: string[] }): string {
-  return `Create 3 content pillars for "${brand.companyName}".
+  return `Crea 3 pilares de contenido para "${brand.companyName}".
 
-Target audience: ${contentStrategy.targetAudience.join(", ")}
-Pain points: ${contentStrategy.painPoints.join(", ")}
+Público objetivo: ${contentStrategy.targetAudience.join(", ")}
+Dolores: ${contentStrategy.painPoints.join(", ")}
 
-The 3 pillars must have percentage allocations that sum to 100%.
+Los 3 pilares deben sumar 100%. Cada pilar debe tener:
+- Nombre descriptivo
+- Porcentaje del total de contenido
+- Descripción de 2-3 oraciones explicando qué cubre y por qué
+- 4-6 temas específicos
 
-Return JSON:
+Retorna SOLO JSON:
 {
   "contentPillars": [
     {
-      "name": "Pillar Name",
+      "name": "Nombre del Pilar",
       "percentage": 40,
-      "description": "What this pillar covers and why",
-      "topics": ["topic1", "topic2", "topic3", "topic4"]
+      "description": "Qué cubre este pilar y por qué es importante para la estrategia",
+      "topics": ["tema1", "tema2", "tema3", "tema4"]
     }
   ]
 }`;
 }
 
-// ─── Point 11: Content Grid ───
+// ─── Point 10: Content Grid ───
 export function promptContentGrid(brand: BrandIdentity, pillars: { name: string; percentage: number }[]): string {
-  return `Create a weekly social media content grid for "${brand.companyName}".
+  return `Crea una grilla de contenido semanal para "${brand.companyName}".
 
-Content pillars: ${pillars.map(p => `${p.name} (${p.percentage}%)`).join(", ")}
+Pilares: ${pillars.map((p) => `${p.name} (${p.percentage}%)`).join(", ")}
 
-Create a Monday-Friday schedule with specific content for each day across platforms.
+Crea un calendario Lunes a Viernes con contenido específico para cada día.
+Incluye variedad de plataformas (Instagram, LinkedIn, TikTok, Blog) y tipos de contenido (Carrusel, Video, Reel, Post, Artículo).
 
-Return JSON:
+Retorna SOLO JSON:
 {
   "contentGrid": [
-    { "day": "Lunes", "platform": "Instagram", "contentType": "Carrusel/Video/Reel/Post", "topic": "specific topic", "pillar": "pillar name", "caption": "suggested caption idea" },
-    { "day": "Lunes", "platform": "LinkedIn", "contentType": "Article/Post", "topic": "specific topic", "pillar": "pillar name" }
+    { "day": "Lunes", "platform": "Instagram", "contentType": "Carrusel", "topic": "tema específico", "pillar": "nombre del pilar", "caption": "idea de caption" },
+    { "day": "Martes", "platform": "LinkedIn", "contentType": "Post", "topic": "tema", "pillar": "pilar" }
   ]
 }`;
 }
 
-// ─── Point 12: KPIs ───
+// ─── Point 11: KPIs ───
 export function promptKPIs(brand: BrandIdentity): string {
-  return `Define key performance indicators for "${brand.companyName}" marketing strategy in ${brand.industry}.
+  return `Define los KPIs para la estrategia de marketing de "${brand.companyName}" en ${brand.industry}.
 
-Organize KPIs into categories:
-- Attraction & SEO
-- Conversion & Sales
-- Retention & Loyalty
-- Brand & Engagement
+Organiza en estas categorías:
+- Atracción y SEO
+- Conversión y Ventas
+- Retención y Lealtad
+- Marca y Engagement
 
-Return JSON:
+Para cada KPI incluye: métrica, descripción clara de qué mide y por qué importa, y un target sugerido.
+
+Retorna SOLO JSON:
 {
   "kpis": [
-    { "category": "Atraccion y SEO", "metric": "Metric Name", "description": "What it measures and why", "target": "suggested target/benchmark" }
+    { "category": "Atracción y SEO", "metric": "Nombre de la Métrica", "description": "Qué mide y por qué es importante", "target": "target sugerido" }
   ]
 }`;
 }
 
-// ─── Point 13: Timeline ───
+// ─── Point 12a: Timeline ───
 export function promptTimeline(brand: BrandIdentity): string {
-  return `Create a 12-week implementation timeline for "${brand.companyName}" marketing strategy.
+  return `Crea un cronograma de implementación de 12 semanas para "${brand.companyName}".
 
-Divide into 4 phases with specific tasks.
+Divide en 4 fases con tareas específicas y accionables.
 
-Return JSON:
+Retorna SOLO JSON:
 {
   "implementationTimeline": [
-    { "phase": "Phase Name", "weeks": "Weeks 1-3", "tasks": ["task1", "task2", "task3"] }
+    { "phase": "Fase 1: Nombre", "weeks": "Semanas 1-3", "tasks": ["tarea específica 1", "tarea 2", "tarea 3", "tarea 4"] }
   ]
 }`;
 }
 
-// ─── Point 14: Conclusions ───
+// ─── Point 12b: Conclusions ───
 export function promptConclusions(brand: BrandIdentity, strategySummary: string): string {
-  return `Create final conclusions and recommendations for "${brand.companyName}" marketing strategy.
+  return `Crea las conclusiones y recomendaciones finales para "${brand.companyName}".
 
-Strategy summary: ${strategySummary}
+Resumen de la estrategia: ${strategySummary}
 
-Return JSON:
+Proporciona:
+- 4 conclusiones clave (cada una de 2-3 oraciones)
+- 4 recomendaciones accionables (cada una de 2-3 oraciones)
+
+Retorna SOLO JSON:
 {
-  "conclusions": ["conclusion 1", "conclusion 2", "conclusion 3"],
-  "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3", "recommendation 4"]
+  "conclusions": ["conclusión detallada 1", "conclusión 2", "conclusión 3", "conclusión 4"],
+  "recommendations": ["recomendación accionable 1", "recomendación 2", "recomendación 3", "recomendación 4"]
 }`;
 }

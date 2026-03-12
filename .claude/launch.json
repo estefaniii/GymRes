@@ -2,15 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "strategy-gravity-dev",
+      "name": "strategy-gravity-web",
       "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["node_modules/.bin/tsx", "src/index.ts"],
-      "port": 3000
-    },
-    {
-      "name": "strategy-gravity-prod",
-      "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["dist/index.js"],
+      "runtimeArgs": ["node_modules/.bin/tsx", "src/web-entry.ts"],
       "port": 3000
     }
   ]
